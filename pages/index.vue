@@ -67,8 +67,6 @@ export default {
       totalCount: 0,
       itemsPerPage: 10,
       itemsPerPageArray: [5, 10, 25, 50],
-      detailId: '',
-      detailOpen: false,
     }
   },
   computed: {
@@ -80,6 +78,9 @@ export default {
     },
   },
   mounted() {
+    this.keyword = this.$store.state.main.keyword
+    this.page = this.$store.state.main.page
+    this.itemsPerPage = this.$store.state.main.itemsPerPage
     this.updateItems()
   },
   methods: {
@@ -87,32 +88,23 @@ export default {
       this.page = number
       this.updateItems()
     },
-    updateItems() {
+    async updateItems() {
       if (!this.keyword) {
         this.items = []
         this.totalCount = 0
         return
       }
       this.loading = true
-      fetch(
-        `https://api.github.com/search/users?q=${this.keyword}&page=${this.page}&per_page=${this.itemsPerPage}`,
-        {
-          headers: {
-            Authorization: `Basic ${process.env.NUXT_ENV_AUTH_TOKEN}`,
-          },
-        }
-      )
-        .then((res) => res.json())
-        .then((resJson) => {
-          this.loading = false
-          if (resJson.total_count) {
-            this.items = resJson.items
-            this.totalCount = resJson.total_count
-          }
-        })
-        .catch(() => {
-          this.loading = false
-        })
+      const data = await this.$store.dispatch('main/getItems', {
+        keyword: this.keyword,
+        page: this.page,
+        itemsPerPage: this.itemsPerPage,
+      })
+      if (data.success) {
+        this.totalCount = data.totalCount
+        this.items = data.items
+      }
+      this.loading = false
     },
     updateItemsPerPage(number) {
       this.page = 1
