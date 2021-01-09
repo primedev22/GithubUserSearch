@@ -1,3 +1,13 @@
+const fetchData = async (url) => {
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Basic ${process.env.NUXT_ENV_AUTH_TOKEN}`,
+    },
+  })
+  const resJson = await res.json()
+  return resJson
+}
+
 export const state = () => ({
   keyword: '',
   page: 1,
@@ -10,19 +20,26 @@ export const actions = {
   async getItems({ commit }, data) {
     try {
       commit('setFilter', data)
-      const res = await fetch(
-        `https://api.github.com/search/users?q=${data.keyword}&page=${data.page}&per_page=${data.itemsPerPage}`,
-        {
-          headers: {
-            Authorization: `Basic ${process.env.NUXT_ENV_AUTH_TOKEN}`,
-          },
-        }
+      const res = await fetchData(
+        `https://api.github.com/search/users?q=${data.keyword}&page=${data.page}&per_page=${data.itemsPerPage}`
       )
-      const resJson = await res.json()
       return {
         success: true,
-        totalCount: resJson.total_count,
-        items: resJson.items,
+        totalCount: res.total_count,
+        items: res.items,
+      }
+    } catch (err) {
+      return { success: false }
+    }
+  },
+  async getUser(_, data) {
+    try {
+      const profile = await fetchData(`https://api.github.com/users/${data.id}`)
+      const repos = await fetchData(profile.repos_url)
+
+      return {
+        success: true,
+        data: { ...profile, repos },
       }
     } catch (err) {
       return { success: false }

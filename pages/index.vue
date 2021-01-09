@@ -1,6 +1,8 @@
 <template>
   <v-container fill-height>
-    <v-overlay :value="loading"></v-overlay>
+    <v-overlay :value="loading">
+      <v-progress-circular indeterminate size="64"></v-progress-circular>
+    </v-overlay>
     <v-row class="my-2">
       <v-text-field
         v-model="keyword"
@@ -11,13 +13,13 @@
         prepend-inner-icon="mdi-account-search"
         label="Search GitHub"
       ></v-text-field>
-      <v-btn class="ma-2" outlined @click="updateItems()">Search</v-btn>
+      <v-btn class="ma-2" outlined @click="search()">Search</v-btn>
     </v-row>
     <v-row class="my-1">
       <span>{{ totalCount }} results found</span>
     </v-row>
     <v-row class="main-content">
-      <Item v-for="item in items" :key="item.id" :data="item" />
+      <UserCard v-for="item in items" :key="item.id" :data="item" />
     </v-row>
     <v-row class="mt-2" align="center" justify="center">
       <span>Items per page</span>
@@ -52,11 +54,11 @@
 </template>
 
 <script>
-import Item from '~/components/Item.vue'
+import UserCard from '~/components/UserCard.vue'
 
 export default {
   components: {
-    Item,
+    UserCard,
   },
   data() {
     return {
@@ -88,6 +90,15 @@ export default {
       this.page = number
       this.updateItems()
     },
+    updateItemsPerPage(number) {
+      this.page = 1
+      this.itemsPerPage = number
+      this.updateItems()
+    },
+    search() {
+      this.page = 1
+      this.updateItems()
+    },
     async updateItems() {
       if (!this.keyword) {
         this.items = []
@@ -105,11 +116,6 @@ export default {
         this.items = data.items
       }
       this.loading = false
-    },
-    updateItemsPerPage(number) {
-      this.page = 1
-      this.itemsPerPage = number
-      this.updateItems()
     },
   },
 }
