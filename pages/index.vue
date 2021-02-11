@@ -124,6 +124,6 @@ export default {
 .main-content {
   height: calc(100vh - 300px);
   max-height: calc(100vh - 300px);
-  overflow: scroll;
+  overflow-y: auto;
 }
 </style>
